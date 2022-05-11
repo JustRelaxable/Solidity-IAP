@@ -6,12 +6,12 @@ struct Product{
 }
 
 contract Application {
-    address public manager;
-    address payable public owner;
+    address private manager;
+    address payable private owner;
     uint256 private nextProductIndex;
-    mapping(uint256 => Product) public productDictionary;
-    mapping(address => uint256[]) public userProducts;
-    mapping(address => uint256) public userTransactionCount;
+    mapping(uint256 => Product) private productDictionary;
+    mapping(address => uint256[]) private userProducts;
+    mapping(address => uint256) private userTransactionCount;
 
     constructor(address creator){
         manager = msg.sender;
@@ -34,25 +34,30 @@ contract Application {
         nextProductIndex++;
     }
 
-    function getProduct(uint256 productID) public view returns(Product memory){
-        require(productID<nextProductIndex);
-        return productDictionary[productID];
+    function registerProduct(address to,uint256 productID) public onlyManager{
+        userProducts[to].push(productID);
+        userTransactionCount[to]++;
     }
 
     function getOwner() public view returns(address payable){
         return owner;
     }
 
-    function registerProduct(address to,uint256 productID) public onlyManager{
-        userProducts[to].push(productID);
-        userTransactionCount[to]++;
+    function getManager() public view returns(address){
+        return manager;
     }
 
-    function getTransactionProductID(address to,uint256 transactionID) public view returns(uint256){
-        return userProducts[to][transactionID];
+    function getProduct(uint256 productID) public view returns(Product memory){
+        require(productID<nextProductIndex);
+        return productDictionary[productID];
     }
 
     function getTransactionCount(address to) public view returns(uint256){
         return userTransactionCount[to];
+    }
+
+    function getTransactionProductID(address to,uint256 transactionID) public view returns(uint256){
+        require(transactionID<getTransactionCount(to));
+        return userProducts[to][transactionID];
     }
 }

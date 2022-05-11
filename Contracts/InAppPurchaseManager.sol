@@ -5,7 +5,7 @@ contract InAppPurchaseManager {
     event ProductPurchased(address,uint256);
 
     uint256 private nextApplicationID;
-    mapping(uint256 => Application) public applicationDictionary;
+    mapping(uint256 => Application) private applicationDictionary;
 
     function createApplication() public returns(address) {
         Application app = new Application(msg.sender);
@@ -15,7 +15,7 @@ contract InAppPurchaseManager {
     }
 
     function purchaseProduct(uint256 applicationID,uint256 productID,address to) public payable{
-        Application application = applicationDictionary[applicationID];
+        Application application = getApplication(applicationID);
         Product memory product = application.getProduct(productID);
         if(msg.value==product.price){
             application.getOwner().transfer(msg.value);
@@ -28,12 +28,18 @@ contract InAppPurchaseManager {
     }
 
     function getTransactionProductID(uint256 applicationID,uint256 transactionID) public view returns(uint256){
-        Application application = applicationDictionary[applicationID];
+        Application application = getApplication(applicationID);
         return application.getTransactionProductID(msg.sender,transactionID);
     }
 
     function getTransactionCount(uint256 applicationID) public view returns(uint256){
-        Application application = applicationDictionary[applicationID];
+        Application application = getApplication(applicationID);
         return application.getTransactionCount(msg.sender);
+    }
+
+    function getApplication(uint256 applicationID) private view returns(Application){
+        require(applicationID<nextApplicationID);
+        Application application = applicationDictionary[applicationID];
+        return application;
     }
 }

@@ -37,6 +37,12 @@ contract InAppPurchaseManager {
         return application.getTransactionCount(msg.sender);
     }
 
+
+    function getApplicationAddress(uint256 applicationID) public view returns(address){
+        Application application = getApplication(applicationID);
+        return address(application);
+    }
+
     function getApplication(uint256 applicationID) private view returns(Application){
         require(applicationID<nextApplicationID);
         Application application = applicationDictionary[applicationID];
